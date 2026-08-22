@@ -1,0 +1,28 @@
+{
+  "name": "obsidian-zerocloud-notes",
+  "version": "0.1.0",
+  "description": "ZeroCloud Notes: clip Xiaohongshu image-text notes & videos to local Markdown notes — 100% offline, zero API cost",
+  "main": "main.js",
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node esbuild.config.mjs",
+    "sync:python": "node build.mjs sync-python",
+    "check:load": "node scripts/load-check.mjs"
+  },
+  "keywords": [
+    "obsidian",
+    "xiaohongshu",
+    "clip",
+    "whisper",
+    "subtitle"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "builtin-modules": "^4.0.0",
+    "esbuild": "^0.24.0",
+    "obsidian": "^1.7.2",
+    "tslib": "^2.8.0",
+    "typescript": "^5.6.0"
+  }
+}
