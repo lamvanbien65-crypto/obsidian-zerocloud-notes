@@ -37,15 +37,13 @@ export async function detectPython3(override: string): Promise<string> {
     "/opt/homebrew/bin/python3",
     "/usr/local/bin/python3",
     "/usr/bin/python3",
+    "/usr/bin/env python3",
   ];
+  // 优先文件存在性检测（execFileSync 在部分 Obsidian 环境会异常，改用 existsSync 更稳）
+  const { existsSync } = await import("fs");
   for (const c of candidates) {
-    try {
-      const { execFileSync } = await import("child_process");
-      execFileSync(c, ["--version"], { stdio: "pipe" });
-      return c;
-    } catch {
-      // 继续尝试下一个
-    }
+    if (c.includes(" ")) continue;               // /usr/bin/env python3 走命令探测
+    if (existsSync(c)) return c;
   }
   // 兜底：zsh login shell 探测
   try {
@@ -56,6 +54,14 @@ export async function detectPython3(override: string): Promise<string> {
     });
     const p = out.trim().split("\n")[0];
     if (p) return p;
+  } catch {
+    // ignore
+  }
+  // 最后兜底：/usr/bin/env 探测（PATH 可用时）
+  try {
+    const { execFileSync } = await import("child_process");
+    execFileSync("/usr/bin/env", ["python3", "--version"], { stdio: "pipe" });
+    return "python3";
   } catch {
     // ignore
   }
