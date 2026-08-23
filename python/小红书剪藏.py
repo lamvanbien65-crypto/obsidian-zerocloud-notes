@@ -84,6 +84,18 @@ def fetch_note(note_url):
     return state["noteData"]["data"]["noteData"]
 
 
+def note_title(note, fallback="小红书笔记"):
+    """标题：优先 title 字段；为空时从 desc 提取第一句（去掉话题标记）"""
+    t = (note.get("title") or "").strip()
+    if t:
+        return t[:60]
+    desc = re.sub(r"#[^#\s]+\[话题\]#", "", note.get("desc") or "").strip()
+    desc = re.sub(r"@[^#\s]+", "", desc).strip()   # 去掉 @作者
+    m = re.split(r"[。！？!?\n]", desc)
+    t = m[0].strip() if m and m[0].strip() else desc[:40]
+    return t[:60] or fallback
+
+
 # ---------- 2. 语音检测 ----------
 
 def speech_ratio(wav_path):
@@ -123,7 +135,7 @@ def download_image(url, dest, referer):
 
 
 def clip_image(note, note_url, out_dir):
-    title = (note.get("title") or "").strip() or "无标题小红书笔记"
+    title = note_title(note, "无标题小红书笔记")
     desc = re.sub(r"#[^#\s]+\[话题\]#", "", note.get("desc") or "").strip()
     tags = [t.get("name") for t in (note.get("tagList") or []) if t.get("name")]
     user = (note.get("user") or {})
@@ -188,7 +200,7 @@ def download_video(note_url, title):
 
 
 def clip_video(note, note_url, out_dir, min_speech):
-    title = (note.get("title") or "").strip() or "无标题小红书视频"
+    title = note_title(note, "无标题小红书视频")
     desc = re.sub(r"#[^#\s]+\[话题\]#", "", note.get("desc") or "").strip()
     user = (note.get("user") or {})
     nickname = user.get("nickName") or user.get("nickname") or "未知作者"
