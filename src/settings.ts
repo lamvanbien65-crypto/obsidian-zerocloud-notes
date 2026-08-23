@@ -14,7 +14,7 @@ export class SrtSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
-    new Setting(containerEl).setName("零云本地笔记（ZeroCloud Notes）").setHeading();
+    new Setting(containerEl).setName("设置").setHeading();
     containerEl.createEl("p", {
       text: "小红书图文/视频本地剪藏：图文笔记 → 结构化 Markdown；视频 → 本地下载 + 口播字幕（纯 BGM 自动跳过）。零云模式：全部处理本地完成，不调用任何云 LLM。依赖：python3、yt-dlp、ffmpeg、whisper-cli。",
     });
