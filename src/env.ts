@@ -1,5 +1,7 @@
 // 子进程环境构造：敏感信息（key/cookie）只走 env，绝不进 argv
 import { App, FileSystemAdapter } from "obsidian";
+import { existsSync } from "fs";
+import { execFileSync } from "child_process";
 import type { SrtSettings } from "./types";
 
 const BREW_DIRS = ["/opt/homebrew/bin", "/usr/local/bin"];
@@ -40,14 +42,12 @@ export async function detectPython3(override: string): Promise<string> {
     "/usr/bin/env python3",
   ];
   // 优先文件存在性检测（execFileSync 在部分 Obsidian 环境会异常，改用 existsSync 更稳）
-  const { existsSync } = await import("fs");
   for (const c of candidates) {
     if (c.includes(" ")) continue;               // /usr/bin/env python3 走命令探测
     if (existsSync(c)) return c;
   }
   // 兜底：zsh login shell 探测
   try {
-    const { execFileSync } = await import("child_process");
     const out = execFileSync("/bin/zsh", ["-lc", "command -v python3"], {
       encoding: "utf8",
       timeout: 5000,
@@ -59,7 +59,6 @@ export async function detectPython3(override: string): Promise<string> {
   }
   // 最后兜底：/usr/bin/env 探测（PATH 可用时）
   try {
-    const { execFileSync } = await import("child_process");
     execFileSync("/usr/bin/env", ["python3", "--version"], { stdio: "pipe" });
     return "python3";
   } catch {
