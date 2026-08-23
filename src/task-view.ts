@@ -3,7 +3,7 @@ import { ItemView, WorkspaceLeaf, Notice } from "obsidian";
 import type { SrtPlugin } from "./main";
 import type { TaskRuntime } from "./types";
 
-export const TASK_VIEW_TYPE = "srt-subtitle-toolkit-tasks";
+export const TASK_VIEW_TYPE = "zerocloud-notes-tasks";
 
 export class TaskView extends ItemView {
   constructor(leaf: WorkspaceLeaf, private plugin: SrtPlugin) {
