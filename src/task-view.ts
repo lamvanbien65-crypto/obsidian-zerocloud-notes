@@ -1,6 +1,7 @@
 // 右侧栏任务面板：任务卡片（状态徽章/阶段链/进度条/取消/重试/日志）
 import { ItemView, WorkspaceLeaf, Notice } from "obsidian";
 import type { SrtPlugin } from "./main";
+import { XhsModal } from "./modals";
 import type { TaskRuntime } from "./types";
 
 export const TASK_VIEW_TYPE = "zerocloud-notes-tasks";
@@ -34,7 +35,13 @@ export class TaskView extends ItemView {
 
     const tasks = this.plugin.queue.all;
     if (tasks.length === 0) {
-      c.createEl("div", { text: "暂无任务。使用命令面板或 ribbon 按钮开始。", cls: "srt-empty" });
+      const empty = c.createEl("div", { cls: "srt-empty" });
+      empty.createEl("div", { text: "暂无任务", cls: "srt-empty-title" });
+      empty.createEl("p", {
+        text: "点击侧边栏「小红书剪藏」图标（📋），或 Cmd+P 输入「小红书剪藏」，粘贴小红书链接即可开始。图文笔记转 Markdown，视频本地下载 + 口播字幕，纯本地 0 元。",
+      });
+      empty.createEl("button", { text: "开始剪藏", cls: "srt-btn" })
+        .addEventListener("click", () => new XhsModal(this.plugin.app, this.plugin).open());
       return;
     }
 
