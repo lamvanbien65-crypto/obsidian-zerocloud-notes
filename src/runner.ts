@@ -32,7 +32,7 @@ export class PythonRunner {
   getScriptPath(script: string): string {
     const base = getVaultRoot(this.app);
     return normalizePath(
-      `${base}/.obsidian/plugins/srt-subtitle-toolkit/python/${script}`
+      `${base}/.obsidian/plugins/zerocloud-notes/python/${script}`
     );
   }
 
