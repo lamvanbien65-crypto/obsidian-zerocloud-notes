@@ -85,16 +85,8 @@ def extract_cookies(domain_keywords, browser="chrome", out=None):
 
     key = derive_key(get_keychain_key(KEYCHAIN_SERVICE[browser]))
 
-    # 复制 db（Chrome 运行中可能锁库），只读打开
-    tmp = Path(tempfile.mkdtemp()) / "cookies.db"
-    shutil.copy2(db, tmp)
-    # 解锁：删除 WAL/SHM（快照一致性）
-    for suffix in ("-wal", "-shm"):
-        p = Path(str(db) + suffix)
-        if p.is_file():
-            shutil.copy2(p, tmp.with_name("cookies.db" + suffix))
-
-    conn = sqlite3.connect(str(tmp))
+    # 只读直连原始库（WAL 模式支持并发只读，SQLite 自动合并 WAL，拿到最新一致数据）
+    conn = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
     rows = conn.execute(
         "SELECT host_key, path, is_secure, expires_utc, name, encrypted_value, is_httponly "
         "FROM cookies WHERE " + " OR ".join("host_key LIKE ?" for _ in domain_keywords),

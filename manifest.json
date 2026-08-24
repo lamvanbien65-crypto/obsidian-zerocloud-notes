@@ -1,7 +1,7 @@
 {
  "id": "zerocloud-notes",
  "name": "ZeroCloud Notes",
- "version": "0.1.9",
+ "version": "0.2.0",
  "minAppVersion": "1.7.2",
  "description": "零云本地笔记：小红书图文/视频本地剪藏 — 图文笔记转结构化 Markdown，视频本地下载 + 口播字幕提取（纯 BGM 自动跳过），全本地处理、零云 LLM、0 元成本。Clip Xiaohongshu image-text notes and videos to local Markdown notes with narration-only subtitles — 100% offline, zero API cost.",
  "author": "lamvanbien65-crypto",
