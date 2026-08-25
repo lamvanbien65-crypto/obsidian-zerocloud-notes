@@ -4,7 +4,7 @@ import type { SrtPlugin } from "./main";
 import { XhsModal } from "./modals";
 import type { TaskRuntime } from "./types";
 
-export const TASK_VIEW_TYPE = "zerocloud-notes-tasks";
+export const TASK_VIEW_TYPE = "link-to-notes-tasks";
 
 export class TaskView extends ItemView {
   constructor(leaf: WorkspaceLeaf, private plugin: SrtPlugin) {

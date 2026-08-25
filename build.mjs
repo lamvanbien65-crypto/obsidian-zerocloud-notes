@@ -6,7 +6,7 @@ import path from "path";
 
 const VAULT = process.env.OBSIDIAN_VAULT
   || "/Users/skylines/Desktop/SRT-ThinkTank";
-const PLUGIN_DIR = path.join(VAULT, ".obsidian", "plugins", "zerocloud-notes");
+const PLUGIN_DIR = path.join(VAULT, ".obsidian", "plugins", "link-to-notes");
 const SRC_PYTHON = path.join(VAULT, "Function", "视频转录"); // 共享脚本事实源
 const PLUGIN_PYTHON = path.join(process.cwd(), "python");     // 仓库内快照
 

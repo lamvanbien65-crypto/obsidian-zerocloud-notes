@@ -7,8 +7,8 @@ export function registerCommands(plugin: SrtPlugin): void {
   const app = plugin.app;
 
   plugin.addCommand({
-    id: "xhs-clip",
-    name: "小红书剪藏",
+    id: "clip-any",
+    name: "剪藏任意链接",
     callback: () => new XhsModal(app, plugin).open(),
   });
   plugin.addCommand({

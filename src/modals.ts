@@ -3,7 +3,7 @@ import { App, Modal, Notice, Setting, SuggestModal } from "obsidian";
 import type { TaskKind } from "./types";
 import type { SrtPlugin } from "./main";
 
-const XHS_RE = /xhslink\.cn\/\S+|xiaohongshu\.com\/(explore|discovery\/item)\/\S+/;
+const CLIP_RE = /https?:\/\/[^\s]+|BV[0-9A-Za-z]{10}|b23\.tv\/\S+/;
 
 export class XhsModal extends Modal {
   constructor(app: App, private plugin: SrtPlugin) {
@@ -13,15 +13,15 @@ export class XhsModal extends Modal {
   onOpen(): void {
     const { contentEl } = this;
     contentEl.empty();
-    contentEl.createEl("h3", { text: "小红书剪藏" });
+    contentEl.createEl("h3", { text: "Link to Notes · 剪藏" });
     contentEl.createEl("p", {
-      text: "零云纯本地：图文笔记 → 图文 Markdown；视频 → 本地下载 + 口播字幕（纯 BGM 自动跳过）· 不使用任何云 LLM",
+      text: "粘贴任意平台链接：B站（视频）/ 抖音（视频·图文）/ 小红书（视频·图文）→ 自动识别平台并剪藏为本地笔记 · 纯本地 0 元",
       cls: "srt-modal-hint",
     });
 
     let url = "";
-    new Setting(contentEl).setName("小红书链接 / 分享口令").addText((t) => {
-      t.setPlaceholder("https://xhslink.cn/o/xxxx 或 xiaohongshu.com/explore/xxxx")
+    new Setting(contentEl).setName("链接 / 分享口令").addText((t) => {
+      t.setPlaceholder("B站 / 抖音 / 小红书 链接或分享口令…")
         .onChange((v) => (url = v.trim()));
       t.inputEl.addClass("srt-wide");
     });
@@ -30,11 +30,11 @@ export class XhsModal extends Modal {
       b.setButtonText("开始剪藏").setCta().onClick(() => {
         const m = url.match(/(https?:\/\/[^\s]+)/);
         const target = m ? m[1] : url;
-        if (!XHS_RE.test(target)) {
-          new Notice("请输入有效的小红书链接（xhslink.cn 短链或 xiaohongshu.com 笔记页）");
+        if (!CLIP_RE.test(target)) {
+          new Notice("请输入有效的链接（B站 / 抖音 / 小红书）");
           return;
         }
-        this.plugin.enqueueXhs(target);
+        this.plugin.enqueueClipAny(target);
         this.close();
       })
     );

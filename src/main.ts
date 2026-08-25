@@ -1,4 +1,4 @@
-// 零云本地笔记（ZeroCloud Notes）— 主入口
+// Link to Notes — 主入口
 import { Notice, Plugin, normalizePath } from "obsidian";
 import type { SrtSettings, TaskKind } from "./types";
 import { DEFAULT_SETTINGS } from "./types";
@@ -30,8 +30,8 @@ export class SrtPlugin extends Plugin {
     registerCommands(this);
     this.addSettingTab(new SrtSettingTab(this.app, this));
 
-    this.addRibbonIcon("list-checks", "零云本地笔记 · 任务面板", () => activateTaskView(this));
-    this.addRibbonIcon("clipboard-copy", "小红书剪藏", () => new XhsModal(this.app, this).open());
+    this.addRibbonIcon("list-checks", "Link to Notes · 任务面板", () => activateTaskView(this));
+    this.addRibbonIcon("clipboard-copy", "剪藏", () => new XhsModal(this.app, this).open());
     this.setupStatusBar();
     this.subscribeQueue();
   }
@@ -46,17 +46,16 @@ export class SrtPlugin extends Plugin {
 
   // ---------- 任务入队 ----------
 
-  enqueueXhs(url: string): void {
+  enqueueClipAny(url: string): void {
     const s = this.settings;
-    const label = url.match(/xhslink\.cn\/\S+|xiaohongshu\.com\/\S+/)?.[0] ?? url;
+    const label = url.match(/[a-z0-9-]+\.[a-z]{2,6}\/\S+|BV[0-9A-Za-z]{10}/)?.[0] ?? url;
     const base = getVaultRoot(this.app);
-    // 设置页目录为 vault 相对路径 → 绝对路径（Python cwd 非 vault 根，相对路径会错位）
     const absDir = (p: string): string | undefined =>
       p ? normalizePath(`${base}/${p}`) : undefined;
-    const noteDir = absDir(s.noteDir) || normalizePath(`${base}/小红书剪藏/笔记`);
+    const noteDir = absDir(s.noteDir) || normalizePath(`${base}/Link to Notes/笔记`);
     const args = [url, "--out-dir", noteDir];
     if (s.minSpeech > 0) args.push("--min-speech", String(s.minSpeech));
-    this.enqueue("xhs-clip", label, "小红书剪藏.py", args);
+    this.enqueue("clip-any", label, "剪藏.py", args);
   }
 
   enqueueClip(mode: TaskKind, file: string): void {
@@ -89,7 +88,7 @@ export class SrtPlugin extends Plugin {
   private setupStatusBar(): void {
     this.statusEl = this.addStatusBarItem();
     this.statusEl.addClass("srt-statusbar");
-    this.statusEl.setText("零云本地笔记");
+    this.statusEl.setText("Link to Notes");
     this.statusEl.onclick = () => activateTaskView(this);
     this.updateStatusBar();
   }
@@ -120,9 +119,9 @@ export class SrtPlugin extends Plugin {
     const running = this.queue.activeCount;
     const queued = this.queue.queuedCount;
     if (running + queued === 0) {
-      this.statusEl.setText("零云本地笔记");
+      this.statusEl.setText("Link to Notes");
     } else {
-      this.statusEl.setText(`零云本地笔记：${running} 进行中${queued ? ` · ${queued} 排队` : ""}`);
+      this.statusEl.setText(`Link to Notes：${running} 进行中${queued ? ` · ${queued} 排队` : ""}`);
     }
   }
 }

@@ -44,6 +44,14 @@ def ensure_cookies(browser, force=False):
     cache.mkdir(parents=True, exist_ok=True)
     ck = cache / f"{browser}_cookies.txt"          # 原始提取文件（完整，含风控 cookie）
     fresh = ck.is_file() and (time.time() - ck.stat().st_mtime) < COOKIE_MAX_AGE
+    if fresh:
+        # 关键 cookie 校验：缓存缺风控/登录 cookie 视为失效，强制重新提取
+        try:
+            txt = ck.read_text(encoding="utf-8")
+            need = ("sid_tt" in txt and "passport_auth_mix_state" in txt and "sessionid" in txt)
+            fresh = need
+        except Exception:
+            fresh = False
     if not (fresh and not force):
         try:
             ce = load("cookie_extract", "cookie_extract.py")

@@ -1,9 +1,9 @@
 {
- "id": "zerocloud-notes",
- "name": "ZeroCloud Notes",
- "version": "0.2.0",
+ "id": "link-to-notes",
+ "name": "Link to Notes",
+ "version": "0.3.0",
  "minAppVersion": "1.7.2",
- "description": "零云本地笔记：小红书图文/视频本地剪藏 — 图文笔记转结构化 Markdown，视频本地下载 + 口播字幕提取（纯 BGM 自动跳过），全本地处理、零云 LLM、0 元成本。Clip Xiaohongshu image-text notes and videos to local Markdown notes with narration-only subtitles — 100% offline, zero API cost.",
+ "description": "链接变笔记：B站/抖音/小红书 视频与图文一键本地剪藏 — 视频本地下载 + 口播字幕提取（纯BGM自动跳过），图文转结构化 Markdown，全本地处理、零云 LLM、0 元成本。Link to Notes: clip Bilibili / Douyin / Xiaohongshu videos and image-text notes to local Markdown, 100% offline, zero API cost.",
  "author": "lamvanbien65-crypto",
  "authorUrl": "https://github.com/lamvanbien65-crypto",
  "isDesktopOnly": true
