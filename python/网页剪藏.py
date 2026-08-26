@@ -104,7 +104,14 @@ def clip(url, out_dir=None):
     text = trafilatura.extract(html, include_comments=False,
                                include_tables=True, favor_precision=True)
     if not text or len(text) < 20:
-        raise RuntimeError(f"正文提取失败（{url}）：页面可能是 JS 渲染或需登录，v1 仅支持静态网页")
+        # 降级：og:description（微信反爬时正文被剥离，但 meta 有内容摘要）
+        m = re.search(r'<meta property="og:description" content="([^"]+)"', html)
+        if m:
+            desc = m.group(1).replace('\x0a', '\n').replace('\u003c', '<')
+            text = desc
+            print("  · 正文被反爬剥离，使用 og:description 兜底")
+        else:
+            raise RuntimeError(f"正文提取失败（{url}）：页面可能是 JS 渲染或需登录，v1 仅支持静态网页")
     print(f"  标题：{title}（{len(text)} 字）")
     pairs = translate_article(text) if not is_chinese(text) else None
 
