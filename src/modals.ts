@@ -20,21 +20,32 @@ export class XhsModal extends Modal {
     });
 
     let url = "";
-    new Setting(contentEl).setName("链接 / 分享口令").addText((t) => {
-      t.setPlaceholder("B站 / 抖音 / 小红书 链接或分享口令…")
-        .onChange((v) => (url = v.trim()));
+    new Setting(contentEl).setName("链接 / 分享口令（支持多行批量）").addTextArea((t) => {
+      t.setPlaceholder("每行一个链接：\nB站 / 抖音 / 小红书 链接或分享口令…")
+        .onChange((v) => (url = v));
       t.inputEl.addClass("srt-wide");
+      t.inputEl.rows = 5;
     });
 
     new Setting(contentEl).addButton((b) =>
+      b.setButtonText("任务面板").onClick(() => {
+        this.close();
+        import("./task-view").then((m) => m.activateTaskView(this.plugin));
+      }));
+
+    new Setting(contentEl).addButton((b) =>
       b.setButtonText("开始剪藏").setCta().onClick(() => {
-        const m = url.match(/(https?:\/\/[^\s]+)/);
-        const target = m ? m[1] : url;
-        if (!CLIP_RE.test(target)) {
+        const lines = url.split(/\n+/).map((l) => l.trim()).filter(Boolean);
+        const targets = lines.map((l) => {
+          const m = l.match(/(https?:\/\/[^\s]+)/);
+          return (m ? m[1] : l);
+        }).filter((t) => CLIP_RE.test(t));
+        if (targets.length === 0) {
           new Notice("请输入有效的链接（B站 / 抖音 / 小红书）");
           return;
         }
-        this.plugin.enqueueClipAny(target);
+        targets.forEach((t) => this.plugin.enqueueClipAny(t));
+        new Notice(`已加入队列：${targets.length} 条链接`);
         this.close();
       })
     );

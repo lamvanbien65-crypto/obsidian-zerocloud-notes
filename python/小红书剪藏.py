@@ -21,8 +21,8 @@ HERE = Path(__file__).resolve().parent
 VAULT_ROOT = Path(os.environ.get("OBSIDIAN_VAULT_ROOT") or HERE.parent.parent.parent)
 os.environ.setdefault("OBSIDIAN_VAULT_ROOT", str(VAULT_ROOT))
 
-DL_DIR = VAULT_ROOT / "小红书剪藏" / "下载"      # 视频/图片
-NOTE_DIR = VAULT_ROOT / "小红书剪藏" / "笔记"    # 笔记
+DL_DIR = VAULT_ROOT / "Link to Notes" / "下载"    # 视频/图片
+NOTE_DIR = VAULT_ROOT / "Link to Notes" / "笔记"    # 笔记
 SPEECH_RATIO_MIN = 0.15                          # 语音占比低于此 → 纯BGM，跳过转录
 
 UA = ("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "
@@ -153,7 +153,10 @@ def clip_image(note, note_url, out_dir):
         # urlDefault 可能是 webp 缩略，试转原图：常见字段 infoList[0].url
         if img.get("infoList"):
             u = img["infoList"][0].get("url") or u
-        ext = ".jpg" if "jpg" in u.lower() else (".png" if "png" in u.lower() else ".jpg")
+        ext = (".gif" if "gif" in u.lower() else
+               ".webp" if "webp" in u.lower() else
+               ".png" if "png" in u.lower() else
+               ".jpg")   # 动图（gif/webp）按真实格式保存，Obsidian 嵌入可播放
         dest = DL_DIR / f"{title[:30]}-{i + 1}{ext}"
         try:
             download_image(u, dest, note_url)

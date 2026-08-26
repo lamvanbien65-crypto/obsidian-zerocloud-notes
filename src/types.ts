@@ -59,8 +59,8 @@ export interface SrtSettings {
 export const DEFAULT_SETTINGS: SrtSettings = {
   pythonPath: "",
   whisperModel: "",
-  downloadDir: "小红书剪藏/下载",
-  noteDir: "小红书剪藏/笔记",
+  downloadDir: "Link to Notes/下载",
+  noteDir: "Link to Notes/笔记",
   minSpeech: 0.15,
   autoOpenNote: true,
   systemNotify: true,

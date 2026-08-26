@@ -19,8 +19,8 @@ HERE = Path(__file__).resolve().parent
 VAULT_ROOT = Path(os.environ.get("OBSIDIAN_VAULT_ROOT") or HERE.parent.parent.parent)
 os.environ.setdefault("OBSIDIAN_VAULT_ROOT", str(VAULT_ROOT))
 
-DL_DIR = VAULT_ROOT / "抖音剪藏" / "下载"      # 视频/分离音频
-NOTE_DIR = VAULT_ROOT / "抖音剪藏" / "笔记"    # 笔记
+DL_DIR = VAULT_ROOT / "Link to Notes" / "下载"    # 视频/分离音频
+NOTE_DIR = VAULT_ROOT / "Link to Notes" / "笔记"    # 笔记
 SPEECH_RATIO_MIN = 0.15
 
 
@@ -184,7 +184,10 @@ def clip_note(url, cookies_browser):
         if not u:
             continue
         safe = re.sub(r'[\/:*?"<>|#]', "", title)[:30] or "图文"
-        dest = DL_DIR / f"{safe}-{i + 1}.jpg"
+        ext = (".gif" if "gif" in u.lower() else
+               ".webp" if "webp" in u.lower() else
+               ".png" if "png" in u.lower() else ".jpg")
+        dest = DL_DIR / f"{safe}-{i + 1}{ext}"
         try:
             req = urllib.request.Request(u, headers={"User-Agent": UA, "Referer": final})
             dest.write_bytes(urllib.request.urlopen(req, timeout=60).read())

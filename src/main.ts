@@ -30,7 +30,6 @@ export class SrtPlugin extends Plugin {
     registerCommands(this);
     this.addSettingTab(new SrtSettingTab(this.app, this));
 
-    this.addRibbonIcon("list-checks", "Link to Notes · 任务面板", () => activateTaskView(this));
     this.addRibbonIcon("clipboard-copy", "剪藏", () => new XhsModal(this.app, this).open());
     this.setupStatusBar();
     this.subscribeQueue();

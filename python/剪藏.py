@@ -69,20 +69,45 @@ def clip(url, out_dir=None, min_speech=0.15):
         return
 
     if plat == "bilibili":
-        # b站全流程.py 的 CLI 入口（标准剪藏模式）
-        bili = load("b站全流程", "b站全流程.py")
-        sys.argv = ["b站全流程.py", url, "--mode", "standard"]
+        # b23.tv 短链先展开
+        if "b23.tv" in url:
+            import subprocess as _sp
+            r = _sp.run(["curl", "-s", "-o", "/dev/null", "-w", "%{url_effective}", "-L", url],
+                        capture_output=True, text=True, timeout=30)
+            final = r.stdout or ""
+            if "/opus/" in final:
+                bili_img = load("b站图文", "b站图文.py")
+                bili_img.clip(final, out_dir)
+                return
+            m = re.search(r"BV[0-9A-Za-z]{10}", final)
+            if m:
+                url = m.group(0)
+                print(f"  · 短链展开 → {url}")
+            else:
+                raise RuntimeError("b23.tv 短链展开失败")
+        elif "/opus/" in url:
+            bili_img = load("b站图文", "b站图文.py")
+            bili_img.clip(url, out_dir)
+            return
+        import os as _os
+        vroot = _os.environ.get("OBSIDIAN_VAULT_ROOT", str(HERE.parent.parent.parent))
+        dl = str(Path(vroot) / "Link to Notes" / "下载")
+        sys.argv = ["b站全流程.py", url, "--mode", "standard", "--dir", dl]
         if out_dir:
             sys.argv += ["--out-dir", out_dir]
         try:
+            bili = load("b站全流程", "b站全流程.py")
             bili.main()
         except SystemExit:
             pass
         return
 
-    raise RuntimeError(
-        f"暂不支持的链接类型（{plat}）：网页剪藏将在 v2.1 提供，"
-        "目前支持 B站 / 抖音 / 小红书")
+    if plat == "web":
+        web = load("网页剪藏", "网页剪藏.py")
+        web.clip(url, out_dir)
+        return
+
+    raise RuntimeError(f"未知平台：{plat}")
 
 
 def main():
