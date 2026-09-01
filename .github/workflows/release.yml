@@ -24,7 +24,8 @@ jobs:
       - run: npm ci
 
       # 构建 main.js（CI 无 vault 时跳过 python 同步与部署，见 build.mjs）
-      - run: npm run build
+      # --release：社区版内嵌脚本不含抖音剪藏
+      - run: npm run build -- --release
 
       # 工件来源证明（Obsidian 审核要求 artifact attestations）
       - name: Attest build provenance

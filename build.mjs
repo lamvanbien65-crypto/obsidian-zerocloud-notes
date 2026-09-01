@@ -62,6 +62,8 @@ function deploy() {
 if (process.argv[2] === "sync-python") {
   syncPython();
 } else {
+  console.log("▶ 生成内嵌脚本…");
+  execSync(`node scripts/embed-scripts.mjs${RELEASE ? " --release" : ""}`, { stdio: "inherit" });
   console.log("▶ esbuild 构建…");
   execSync("node esbuild.config.mjs production", { stdio: "inherit" });
   syncPython();

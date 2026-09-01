@@ -11,6 +11,7 @@ import { XhsModal } from "./modals";
 import { registerLightbox } from "./lightbox";
 import { TaskView, TASK_VIEW_TYPE, activateTaskView } from "./task-view";
 import { notifyDone, notifyFailed } from "./notify";
+import { ensurePythonScripts } from "./scripts-bootstrap";
 
 let seq = 0;
 
@@ -23,6 +24,7 @@ export class SrtPlugin extends Plugin {
 
   async onload(): Promise<void> {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    ensurePythonScripts(this.app, this.manifest.version);   // 社区单文件分发：自举 python 脚本
     this.runner = new PythonRunner(this.app, this.settings);
     this.queue = new TaskQueue(this.runner, () => this.settings.maxParallel);
 
