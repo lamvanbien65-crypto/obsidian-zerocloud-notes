@@ -178,7 +178,7 @@ def clip_note(url, cookies_browser):
     author = ((det.get("authorInfo") or {}).get("nickname")) or "未知作者"
     imgs = det.get("images") or []
     print(f"  标题：{title}（作者 {author}，图片 {len(imgs)} 张）")
-    img_paths = []
+    img_paths, vid_paths = [], []
     for i, img in enumerate(imgs):
         u = (img.get("urlList") or img.get("downloadUrlList") or [""])[0]
         if not u:
@@ -194,6 +194,20 @@ def clip_note(url, cookies_browser):
             img_paths.append(dest)
         except Exception as e:
             print(f"  ⚠ 图片{i + 1}下载失败：{e}")
+        # 实况图（Live Photo）：images[].video 带动效视频 → 一并下载嵌入
+        lv = (img.get("video") or {})
+        pa = lv.get("playAddr") or []
+        if pa:
+            src = pa[-1].get("src", "") or pa[0].get("src", "")   # 末位通常码率更高
+            if src:
+                vdest = DL_DIR / f"{safe}-{i + 1}.mp4"
+                try:
+                    req = urllib.request.Request(src, headers={"User-Agent": UA, "Referer": final})
+                    vdest.write_bytes(urllib.request.urlopen(req, timeout=60).read())
+                    vid_paths.append(vdest)
+                    print(f"  📹 实况动效已下载：{vdest.name}")
+                except Exception as e:
+                    print(f"  ⚠ 实况动效{i + 1}下载失败：{e}")
     NOTE_DIR.mkdir(parents=True, exist_ok=True)
     lines = [f"# {title}", "", f"> 抖音图文笔记 · {author}", ""]
     if desc:
@@ -201,10 +215,14 @@ def clip_note(url, cookies_browser):
     for pth in img_paths:
         lines.append(f"![[{pth.relative_to(VAULT_ROOT).as_posix()}]]")
         lines.append("")
+        for vp in vid_paths:
+            if vp.stem == pth.stem:          # 图片配对应动效 → 图下方嵌视频
+                lines.append(f"![[{vp.relative_to(VAULT_ROOT).as_posix()}]]")
+                lines.append("")
     lines.append(f"原文：[{final}]({final})")
     out = NOTE_DIR / f"{re.sub(r'[\/:*?"<>|#]', '', title)[:50]}.md"
     out.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(f"✅ 笔记已生成：{out}（图片 {len(img_paths)} 张）")
+    print(f"✅ 笔记已生成：{out}（图片 {len(img_paths)} 张，实况动效 {len(vid_paths)} 条）")
 
 # ---------- 3. 剪藏 ----------
 

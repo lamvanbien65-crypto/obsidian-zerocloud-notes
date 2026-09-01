@@ -8,6 +8,7 @@ import { TaskQueue } from "./queue";
 import { SrtSettingTab } from "./settings";
 import { registerCommands } from "./commands";
 import { XhsModal } from "./modals";
+import { registerLightbox } from "./lightbox";
 import { TaskView, TASK_VIEW_TYPE, activateTaskView } from "./task-view";
 import { notifyDone, notifyFailed } from "./notify";
 
@@ -28,6 +29,7 @@ export class SrtPlugin extends Plugin {
     this.registerView(TASK_VIEW_TYPE, (leaf) => new TaskView(leaf, this));
 
     registerCommands(this);
+    registerLightbox();
     this.addSettingTab(new SrtSettingTab(this.app, this));
 
     this.addRibbonIcon("clipboard-copy", "剪藏", () => new XhsModal(this.app, this).open());

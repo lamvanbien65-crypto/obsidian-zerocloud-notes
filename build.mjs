@@ -1,12 +1,16 @@
 // 构建脚本：esbuild 构建 main.js + 同步 python 脚本到 vault 插件目录
+//   node build.mjs              → 本地开发构建（部署到 vault 插件目录，全功能）
+//   node build.mjs --release    → 社区发布构建（输出到 release/link-to-notes/，不含抖音剪藏）
 import { execSync } from "child_process";
 import { cpSync, existsSync, mkdirSync, rmSync } from "fs";
 import { homedir } from "os";
 import path from "path";
 
+const RELEASE = process.argv.includes("--release");
 const VAULT = process.env.OBSIDIAN_VAULT
   || "/Users/skylines/Desktop/SRT-ThinkTank";
 const PLUGIN_DIR = path.join(VAULT, ".obsidian", "plugins", "link-to-notes");
+const RELEASE_DIR = path.join(process.cwd(), "release", "link-to-notes"); // 社区版打包目录
 const SRC_PYTHON = path.join(VAULT, "Function", "视频转录"); // 共享脚本事实源
 const PLUGIN_PYTHON = path.join(process.cwd(), "python");     // 仓库内快照
 
@@ -31,27 +35,28 @@ function syncPython() {
 }
 
 function deploy() {
-  if (!existsSync(VAULT)) {
+  const target = RELEASE ? RELEASE_DIR : PLUGIN_DIR;
+  if (!RELEASE && !existsSync(VAULT)) {
     console.log("  · vault 不存在（CI/干净环境）：跳过部署");
     return;
   }
-  mkdirSync(PLUGIN_DIR, { recursive: true });
+  mkdirSync(target, { recursive: true });
   // 清空旧产物（保留 manifest 由主构建负责）
   for (const f of ["main.js", "main.js.map", "styles.css", "manifest.json", "versions.json"]) {
-    const p = path.join(PLUGIN_DIR, f);
+    const p = path.join(target, f);
     if (existsSync(p)) rmSync(p, { force: true });
   }
-  rmSync(path.join(PLUGIN_DIR, "python"), { recursive: true, force: true });
+  rmSync(path.join(target, "python"), { recursive: true, force: true });
 
-  cpSync(path.join(process.cwd(), "main.js"), path.join(PLUGIN_DIR, "main.js"));
-  cpSync(path.join(process.cwd(), "styles.css"), path.join(PLUGIN_DIR, "styles.css"));
-  cpSync(path.join(process.cwd(), "manifest.json"), path.join(PLUGIN_DIR, "manifest.json"));
-  if (existsSync("versions.json")) cpSync("versions.json", path.join(PLUGIN_DIR, "versions.json"));
-  cpSync(path.join(process.cwd(), "python"), path.join(PLUGIN_DIR, "python"), {
+  cpSync(path.join(process.cwd(), "main.js"), path.join(target, "main.js"));
+  cpSync(path.join(process.cwd(), "styles.css"), path.join(target, "styles.css"));
+  cpSync(path.join(process.cwd(), "manifest.json"), path.join(target, "manifest.json"));
+  if (existsSync("versions.json")) cpSync("versions.json", path.join(target, "versions.json"));
+  cpSync(path.join(process.cwd(), "python"), path.join(target, "python"), {
     recursive: true,
-    filter: (p) => !p.includes("__pycache__"),
+    filter: (p) => !p.includes("__pycache__") && !(RELEASE && p.includes("抖音剪藏.py")),
   });
-  console.log(`✅ 已部署到 ${PLUGIN_DIR}`);
+  console.log(`✅ 已部署到 ${target}${RELEASE ? "（社区版：不含抖音剪藏）" : ""}`);
 }
 
 if (process.argv[2] === "sync-python") {
