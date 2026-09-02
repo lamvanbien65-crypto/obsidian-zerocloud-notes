@@ -14,7 +14,7 @@ export interface RunningTask {
 
 export class PythonRunner {
   private pythonPath: string | null = null;
-  constructor(private app: App, private settings: SrtSettings) {}
+  constructor(private app: App, private settings: SrtSettings, private pluginId: string) {}
 
   async getPython(): Promise<string> {
     if (!this.pythonPath) {
@@ -32,7 +32,7 @@ export class PythonRunner {
   getScriptPath(script: string): string {
     const base = getVaultRoot(this.app);
     return normalizePath(
-      `${base}/.obsidian/plugins/link-to-notes/python/${script}`
+      `${base}/.obsidian/plugins/${this.pluginId}/python/${script}`
     );
   }
 

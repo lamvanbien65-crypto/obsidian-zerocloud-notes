@@ -5,12 +5,12 @@ import * as fs from "fs";
 import * as path from "path";
 import { EMBEDDED_SCRIPTS } from "./embeddedScripts";
 
-export function ensurePythonScripts(app: App, version: string): void {
+export function ensurePythonScripts(app: App, pluginId: string, version: string): void {
   try {
     const adapter = app.vault.adapter as { getBasePath?: () => string };
     const root = adapter.getBasePath?.();
     if (!root) return;
-    const dir = path.join(root, ".obsidian", "plugins", "link-to-notes", "python");
+    const dir = path.join(root, ".obsidian", "plugins", pluginId, "python");
     fs.mkdirSync(dir, { recursive: true });
     // 版本戳：插件升级时整体重写（脚本可能与版本联动）
     const stamp = path.join(dir, ".scripts-version");
@@ -22,8 +22,8 @@ export function ensurePythonScripts(app: App, version: string): void {
       fs.writeFileSync(p, Buffer.from(b64, "base64"));
     }
     fs.writeFileSync(stamp, version);
-    console.log(`[link-to-notes] python 脚本自举完成（${Object.keys(EMBEDDED_SCRIPTS).length} 个，v${version}）`);
+    console.log(`[${pluginId}] python 脚本自举完成（${Object.keys(EMBEDDED_SCRIPTS).length} 个，v${version}）`);
   } catch (e) {
-    console.error("[link-to-notes] python 脚本自举失败:", e);
+    console.error(`[${pluginId}] python 脚本自举失败:`, e);
   }
 }

@@ -24,8 +24,8 @@ export class SrtPlugin extends Plugin {
 
   async onload(): Promise<void> {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-    ensurePythonScripts(this.app, this.manifest.version);   // 社区单文件分发：自举 python 脚本
-    this.runner = new PythonRunner(this.app, this.settings);
+    ensurePythonScripts(this.app, this.manifest.id, this.manifest.version);   // 社区单文件分发：自举 python 脚本
+    this.runner = new PythonRunner(this.app, this.settings, this.manifest.id);
     this.queue = new TaskQueue(this.runner, () => this.settings.maxParallel);
 
     this.registerView(TASK_VIEW_TYPE, (leaf) => new TaskView(leaf, this));
