@@ -10,7 +10,8 @@ export function ensurePythonScripts(app: App, pluginId: string, version: string)
     const adapter = app.vault.adapter as { getBasePath?: () => string };
     const root = adapter.getBasePath?.();
     if (!root) return;
-    const dir = path.join(root, ".obsidian", "plugins", pluginId, "python");
+    const configDir = (app.vault as { configDir?: string }).configDir ?? ".obsidian";
+    const dir = path.join(root, configDir, "plugins", pluginId, "python");
     fs.mkdirSync(dir, { recursive: true });
     // 版本戳：插件升级时整体重写（脚本可能与版本联动）
     const stamp = path.join(dir, ".scripts-version");

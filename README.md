@@ -1,6 +1,6 @@
-# ZeroCloud Notes
+# Link to Notes
 
-**Clip Xiaohongshu & Douyin to local notes — 100% offline, zero API cost.**
+**Clip Xiaohongshu, Bilibili, YouTube & web articles into local Markdown notes — 100% offline, zero API cost.**
 
 ZeroCloud Notes is the second plugin in the ZeroCloud family, built entirely with vibe coding — from a battle-tested Claude workflow to a polished Obsidian plugin. It brings your favorite social-media content into your vault as clean, structured notes, with everything running locally on your machine. No cloud APIs, no tokens, no cost.
 

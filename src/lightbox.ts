@@ -1,8 +1,7 @@
 // 全局画廊灯箱：点击轮播卡片 → 全屏查看；触控板左右滑动切换上一张/下一张
 // 纯文字卡片 → 白底深字展示（与文字卡样式一致）；图片/视频 → 黑底原图
+// 样式全部走 CSS 类（styles.css），满足 Obsidian 审核 no-static-styles-assignment
 import { App, Modal } from "obsidian";
-
-const VIDEO_EXT = [".mov", ".mp4", ".webm", ".m4v"];
 
 type GalleryItem =
   | { kind: "image"; src: string; caption: string }
@@ -25,39 +24,23 @@ class GalleryModal extends Modal {
     this.idx = start;
   }
 
+  private modalEl(): HTMLElement | null {
+    return this.contentEl.closest(".modal") as HTMLElement | null;
+  }
+
   onOpen(): void {
     const { contentEl } = this;
     contentEl.empty();
-    const modalEl = contentEl.closest(".modal") as HTMLElement | null;
+    const modalEl = this.modalEl();
     if (modalEl) {
-      modalEl.style.width = "100vw";
-      modalEl.style.height = "100vh";
-      modalEl.style.maxWidth = "100vw";
-      modalEl.style.margin = "0";
-      modalEl.style.background = "rgba(0,0,0,0.95)";
+      modalEl.addClass("lb-modal", "lb-dark");
       const closeBtn = modalEl.querySelector(".modal-close-button") as HTMLElement | null;
-      if (closeBtn) closeBtn.style.color = "#fff";
+      if (closeBtn) closeBtn.addClass("lb-close-btn");
     }
-    contentEl.addClass("carousel-lightbox");
-    contentEl.style.width = "100%";
-    contentEl.style.height = "100%";
-    contentEl.style.display = "flex";
-    contentEl.style.alignItems = "center";
-    contentEl.style.justifyContent = "center";
-    contentEl.style.overflow = "hidden";
-
-    this.countEl = contentEl.createEl("div");
-    this.countEl.style.position = "fixed";
-    this.countEl.style.bottom = "20px";
-    this.countEl.style.left = "50%";
-    this.countEl.style.transform = "translateX(-50%)";
-    this.countEl.style.color = "#fff";
-    this.countEl.style.fontSize = "14px";
-    this.countEl.style.background = "rgba(0,0,0,0.5)";
-    this.countEl.style.padding = "4px 12px";
-    this.countEl.style.borderRadius = "12px";
-
+    contentEl.addClass("carousel-lightbox", "lb-dark");
+    this.countEl = contentEl.createEl("div", { cls: "lb-count" });
     this.show();
+
     // 触控板双指左右滑动 → 切图（wheel deltaX 累积）
     contentEl.addEventListener("wheel", (e) => {
       e.preventDefault();
@@ -69,74 +52,53 @@ class GalleryModal extends Modal {
         this.wheelAcc = 0;
       }
     }, { passive: false });
-    // 键盘 ← → 切图
-    window.addEventListener("keydown", (e) => {
+    // 键盘 ← → 切图（组件生命周期内自动清理）
+    this.registerDomEvent(window, "keydown", (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") this.prev();
       if (e.key === "ArrowRight") this.next();
     });
   }
 
+  /** 白/黑主题切换：文字卡白底、图/视频黑底 */
   private setTheme(light: boolean): void {
-    const modalEl = this.contentEl.closest(".modal") as HTMLElement | null;
-    if (modalEl) modalEl.style.background = light ? "#ffffff" : "rgba(0,0,0,0.95)";
-    const closeBtn = modalEl?.querySelector(".modal-close-button") as HTMLElement | null;
-    if (closeBtn) closeBtn.style.color = light ? "#333" : "#fff";
-    if (this.countEl) {
-      this.countEl.style.color = light ? "#666" : "#fff";
-      this.countEl.style.background = light ? "rgba(0,0,0,0.08)" : "rgba(0,0,0,0.5)";
+    const modalEl = this.modalEl();
+    const theme = light ? "lb-light" : "lb-dark";
+    if (modalEl) {
+      modalEl.removeClass("lb-light", "lb-dark");
+      modalEl.addClass(theme);
     }
+    this.contentEl.removeClass("lb-light", "lb-dark");
+    this.contentEl.addClass(theme);
   }
 
   private show(): void {
     if (!this.countEl) return;
-    // 旧元素淡出移除，按卡片类型动态创建
     if (this.mediaEl) this.mediaEl.remove();
     const item = this.items[this.idx];
     let el: HTMLElement;
     if (item.kind === "text") {
       // 纯文字笔记：白底深字，与文字卡样式一致
       this.setTheme(true);
-      const wrap = this.contentEl.createDiv();
-      wrap.style.cssText =
-        "width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;" +
-        "padding:8vh 10vw;box-sizing:border-box;overflow-y:auto;";
-      const h = wrap.createEl("div");
-      h.style.cssText = "font-size:28px;font-weight:700;color:#b45309;margin-bottom:24px;";
+      const wrap = this.contentEl.createDiv({ cls: "lb-wrap lb-text-wrap" });
+      const h = wrap.createEl("div", { cls: "lb-text-step" });
       h.setText(item.step);
-      const p = wrap.createEl("div");
-      p.style.cssText =
-        "font-size:20px;line-height:1.8;color:#222222;max-width:80vw;white-space:pre-wrap;word-break:break-word;text-align:center;";
+      const p = wrap.createEl("div", { cls: "lb-text-body" });
       p.setText(item.text);
       el = wrap;
     } else if (item.kind === "video") {
       this.setTheme(false);
-      const wrap = this.contentEl.createDiv();
-      wrap.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:14px;max-width:95vw;";
-      const v = wrap.createEl("video", { attr: { src: item.src, controls: "controls" } });
-      v.style.maxWidth = "95vw";
-      v.style.maxHeight = "72vh";
-      v.style.objectFit = "contain";
-      v.style.borderRadius = "4px";
+      const wrap = this.contentEl.createDiv({ cls: "lb-wrap lb-media-wrap" });
+      const v = wrap.createEl("video", { cls: "lb-media", attr: { src: item.src, controls: "controls" } });
       v.play();
-      const cap = wrap.createEl("div");
-      cap.style.cssText = "color:#ddd;font-size:15px;line-height:1.7;text-align:center;max-width:90vw;white-space:normal;";
+      const cap = wrap.createEl("div", { cls: "lb-caption" });
       cap.setText(item.caption);
       el = wrap;
     } else {
       this.setTheme(false);
-      const wrap = this.contentEl.createDiv();
-      wrap.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:14px;max-width:95vw;";
-      const img = wrap.createEl("img", { attr: { src: item.src } });
-      img.style.maxWidth = "95vw";
-      img.style.maxHeight = "72vh";
-      img.style.objectFit = "contain";
-      img.style.borderRadius = "4px";
-      img.style.transition = "opacity 0.15s";
-      img.style.opacity = "0";
-      setTimeout(() => (img.style.opacity = "1"), 60);
+      const wrap = this.contentEl.createDiv({ cls: "lb-wrap lb-media-wrap" });
+      const img = wrap.createEl("img", { cls: "lb-media lb-fade-in", attr: { src: item.src } });
       // 完整文字说明（图片下方，完整呈现）
-      const cap = wrap.createEl("div");
-      cap.style.cssText = "color:#ddd;font-size:15px;line-height:1.7;text-align:center;max-width:90vw;white-space:normal;";
+      const cap = wrap.createEl("div", { cls: "lb-caption" });
       cap.setText(item.caption);
       el = wrap;
     }
@@ -206,10 +168,8 @@ export function registerLightbox(): void {
       });
     }
     if (items.length === 0) return;
-    console.log("[carousel] 灯箱打开", items.length, "项，第", start + 1, "项");
     new GalleryModal(window.app, items, start).open();
   };
   document.addEventListener("pointerdown", open, true);
   document.addEventListener("click", open, true);
-  console.log("[carousel] 灯箱已注册（pointerdown 捕获阶段）");
 }

@@ -9,8 +9,8 @@ import path from "path";
 const RELEASE = process.argv.includes("--release");
 const VAULT = process.env.OBSIDIAN_VAULT
   || "/Users/skylines/Desktop/SRT-ThinkTank";
-const PLUGIN_DIR = path.join(VAULT, ".obsidian", "plugins", "link-to-notes");
-const RELEASE_DIR = path.join(process.cwd(), "release", "link-to-notes"); // 社区版打包目录
+const PLUGIN_DIR = path.join(VAULT, ".obsidian", "plugins", "zerocloud-notes");
+const RELEASE_DIR = path.join(process.cwd(), "release", "zerocloud-notes"); // 社区版打包目录
 const SRC_PYTHON = path.join(VAULT, "Function", "视频转录"); // 共享脚本事实源
 const PLUGIN_PYTHON = path.join(process.cwd(), "python");     // 仓库内快照
 
