@@ -7,8 +7,13 @@ const RELEASE = process.argv.includes("--release");
 const PY = join(process.cwd(), "python");
 const OUT = join(process.cwd(), "src", "embeddedScripts.ts");
 
+// 不进内嵌：vault 侧开发工具（如 轮播生成.py 由 vault Function/轮播生成/ 独立管理，
+// 不经插件运行时调用，无需随插件分发给用户）
+const EXCLUDE = ["轮播生成.py"];
+
 const files = readdirSync(PY)
   .filter((f) => f.endsWith(".py") && !f.includes("__pycache__"))
+  .filter((f) => !EXCLUDE.includes(f))
   .filter((f) => !(RELEASE && f.includes("抖音剪藏")))
   .sort();
 
