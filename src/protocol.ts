@@ -6,9 +6,9 @@ export const EVENT_PREFIX = "\x1e";
 export function parseLine(line: string): ProgressEvent | null {
   if (line.startsWith(EVENT_PREFIX)) {
     try {
-      const obj = JSON.parse(line.slice(1));
+      const obj: Record<string, unknown> = JSON.parse(line.slice(1)) as Record<string, unknown>;
       if (obj && typeof obj === "object" && typeof obj.t === "string") {
-        return obj as ProgressEvent;
+        return obj as unknown as ProgressEvent;
       }
     } catch {
       // 解析失败按日志处理

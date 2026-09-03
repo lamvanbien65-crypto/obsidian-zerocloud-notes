@@ -1,5 +1,6 @@
 // Obsidian API mock（严格契约加载测试用）
 class Plugin {
+  /** @param {unknown} app @param {unknown} manifest */
   constructor(app, manifest) { this.app = app; this.manifest = manifest; }
   registerView() {}
   registerEvent() {}
@@ -14,6 +15,7 @@ class Plugin {
 }
 
 class Setting {
+  /** @param {unknown} containerEl */
   constructor(containerEl) { this.containerEl = containerEl; this.settingEl = { style: { display: "" } }; }
   setDesc() { return this; }
   setName() { return this; }
@@ -25,11 +27,13 @@ class Setting {
 }
 
 class PluginSettingTab {
+  /** @param {unknown} app @param {unknown} plugin */
   constructor(app, plugin) { this.app = app; this.plugin = plugin; }
   display() {}
 }
 
 class Modal {
+  /** @param {unknown} app */
   constructor(app) { this.app = app; this.contentEl = { empty() {}, createEl() { return new El(); } }; }
   open() { return this; }
   close() {}
@@ -48,10 +52,10 @@ class El {
   addDropdown() { return { addOption() { return this; }, setValue() { return this; }, onChange() {} }; }
   addToggle() { return { setValue() { return this; }, onChange() {} }; }
   addButton() { return { setButtonText() { return this; }, setCta() { return this; }, onClick() {} }; }
-  addClass() {}
 }
 
 class SuggestModal {
+  /** @param {unknown} app */
   constructor(app) { this.app = app; }
   setPlaceholder() {}
   setInstructions() {}
@@ -59,6 +63,7 @@ class SuggestModal {
 }
 
 class ItemView {
+  /** @param {unknown} leaf */
   constructor(leaf) {
     this.leaf = leaf;
     this.containerEl = { children: [null, new El()] };
@@ -71,8 +76,10 @@ class ItemView {
 }
 
 class Notice {
+  /** @param {unknown} msg */
   constructor(msg) { console.log("[Notice]", msg); }
 }
+/** @param {string} p */
 function normalizePath(p) { return p.replace(/\\/g, "/"); }
 
 export default { Plugin, PluginSettingTab, Setting, Modal, SuggestModal, ItemView, Notice, normalizePath };

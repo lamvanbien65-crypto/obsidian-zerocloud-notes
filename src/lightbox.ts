@@ -24,14 +24,15 @@ class GalleryModal extends Modal {
     this.idx = start;
   }
 
-  private modalEl(): HTMLElement | null {
+  /** Modal 的弹窗根元素（基类 modalEl 为 HTMLElement，此处需可空） */
+  private getModalEl(): HTMLElement | null {
     return this.contentEl.closest(".modal") as HTMLElement | null;
   }
 
   onOpen(): void {
     const { contentEl } = this;
     contentEl.empty();
-    const modalEl = this.modalEl();
+    const modalEl = this.getModalEl();
     if (modalEl) {
       modalEl.addClass("lb-modal", "lb-dark");
       const closeBtn = modalEl.querySelector(".modal-close-button") as HTMLElement | null;
@@ -52,16 +53,14 @@ class GalleryModal extends Modal {
         this.wheelAcc = 0;
       }
     }, { passive: false });
-    // 键盘 ← → 切图（组件生命周期内自动清理）
-    this.registerDomEvent(window, "keydown", (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") this.prev();
-      if (e.key === "ArrowRight") this.next();
-    });
+    // 键盘 ← → 切图（走 modal scope，随弹窗关闭自动清理，兼容 Obsidian 1.7.2+）
+    this.scope.register([], "ArrowLeft", () => this.prev());
+    this.scope.register([], "ArrowRight", () => this.next());
   }
 
   /** 白/黑主题切换：文字卡白底、图/视频黑底 */
   private setTheme(light: boolean): void {
-    const modalEl = this.modalEl();
+    const modalEl = this.getModalEl();
     const theme = light ? "lb-light" : "lb-dark";
     if (modalEl) {
       modalEl.removeClass("lb-light", "lb-dark");
@@ -146,7 +145,7 @@ function cardToItem(card: HTMLElement): GalleryItem | null {
   return null;
 }
 
-export function registerLightbox(): void {
+export function registerLightbox(app: App): void {
   // 捕获阶段注册：抢先于 Obsidian 原生图片查看器，防止事件在到达 document 前被拦截
   const open = (e: PointerEvent | MouseEvent): void => {
     const card = (e.target as HTMLElement).closest(".carousel-card") as HTMLElement | null;
@@ -168,7 +167,7 @@ export function registerLightbox(): void {
       });
     }
     if (items.length === 0) return;
-    new GalleryModal(window.app, items, start).open();
+    new GalleryModal(app, items, start).open();
   };
   document.addEventListener("pointerdown", open, true);
   document.addEventListener("click", open, true);

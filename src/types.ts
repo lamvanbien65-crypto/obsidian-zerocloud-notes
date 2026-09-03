@@ -4,6 +4,7 @@ export type TaskId = string;
 export type TaskStatus = "queued" | "running" | "succeeded" | "failed" | "canceled";
 export type TaskKind =
   | "xhs-clip"
+  | "clip-any"
   | "transcribe"
   | "standard";
 
