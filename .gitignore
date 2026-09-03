@@ -3,4 +3,4 @@ main.js
 main.js.map
 python/__pycache__/
 .DS_Store
-release/ 已从 git 移除
+release/
