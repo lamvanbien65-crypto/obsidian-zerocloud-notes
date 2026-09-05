@@ -75,15 +75,6 @@ export class TaskView extends ItemView {
       }
     }
 
-    // 块级进度条
-    if (t.progress && t.progress.total > 0) {
-      const bar = el.createDiv({ cls: "srt-progress" });
-      const fill = bar.createDiv({ cls: "srt-progress-fill" });
-      const pct = Math.min(100, Math.round((t.progress.done / t.progress.total) * 100));
-      fill.style.width = `${pct}%`;
-      bar.createEl("span", { text: `${t.progress.done}/${t.progress.total}`, cls: "srt-progress-text" });
-    }
-
     // 错误
     if (t.error && (t.status === "failed" || t.status === "running")) {
       el.createEl("div", { text: `⚠ ${t.error.text ?? t.error.code}`, cls: "srt-error" });
@@ -98,8 +89,18 @@ export class TaskView extends ItemView {
       }
     }
 
-    // 操作按钮
+    // 操作按钮行（方案 A：进度条 + 实时 ETA 与按钮同行）
     const ops = el.createDiv({ cls: "srt-ops" });
+    if (t.progress && t.progress.total > 0 && (t.status === "running" || t.status === "queued")) {
+      const prog = ops.createDiv({ cls: "srt-ops-progress" });
+      const bar = prog.createDiv({ cls: "srt-progress" });
+      const fill = bar.createDiv({ cls: "srt-progress-fill" });
+      const pct = Math.min(100, Math.round((t.progress.done / t.progress.total) * 100));
+      fill.style.width = `${pct}%`;
+      bar.createEl("span", { text: `${pct}%`, cls: "srt-progress-text" });
+      const eta = etaText(t);
+      if (eta) prog.createEl("span", { text: eta, cls: "srt-eta" });
+    }
     if (t.status === "running" || t.status === "queued") {
       const cancel = ops.createEl("button", { text: "取消", cls: "srt-btn" });
       cancel.onclick = () => this.plugin.queue.cancel(t.id);
@@ -121,6 +122,16 @@ export class TaskView extends ItemView {
 
     return el;
   }
+}
+
+function etaText(t: TaskRuntime): string {
+  if (t.etaPassthrough) return `剩余 ${t.etaPassthrough}`;
+  if (typeof t.etaSec === "number" && t.etaSec >= 0) {
+    const s = Math.round(t.etaSec);
+    const m = Math.floor(s / 60);
+    return m > 0 ? `剩余约 ${m} 分 ${s % 60} 秒` : `剩余约 ${s} 秒`;
+  }
+  return "";
 }
 
 function statusText(s: TaskRuntime["status"]): string {

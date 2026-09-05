@@ -28,6 +28,7 @@ export interface ProgressEvent {
   label?: string;
   done?: number;
   total?: number;
+  eta?: string; // 脚本透传的 ETA（如 yt-dlp "00:20"）
   outputs?: { type: "note" | "video" | "audio" | "json" | "srt" | "txt"; path: string }[];
   code?: string;
   text?: string;
@@ -38,6 +39,10 @@ export interface TaskRuntime extends TaskSpec {
   status: TaskStatus;
   stages: StageState[];
   progress?: { done: number; total: number };
+  etaPassthrough?: string; // 脚本透传 ETA（yt-dlp）
+  etaSec?: number;         // 本地速率估算剩余秒数
+  lastDone?: number;       // ETA 速率计算内部状态
+  lastAt?: number;
   logTail: string[];
   result?: { outputs: ProgressEvent["outputs"] };
   error?: { code: string; text: string };

@@ -92,9 +92,31 @@ def main():
     elif args.cookies_from_browser:
         cmd += ["--cookies-from-browser", args.cookies_from_browser]
     print(f"▶ 下载中（{args.quality}）→ {out_dir}")
-    r = subprocess.run(cmd, cwd=str(out_dir))
-    if r.returncode != 0:
+    try:
+        import progress
+        progress.emit("stage", stage="download", label="▶ 下载中…")
+    except ImportError:
+        progress = None
+    # 流式解析 yt-dlp 进度（--newline 把 \r 换行）：发射数字进度 + 透传原生 ETA 给任务面板
+    p = subprocess.Popen(cmd + ["--newline"], cwd=str(out_dir),
+                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                         text=True, bufsize=1)
+    PROG_RE = re.compile(r"\[download\]\s+([\d.]+)%\s+of\s+~?[\d.]+\w+\s+at\s+[\d.]+\w+/s\s+ETA\s+([\d:]+)")
+    for line in p.stdout:
+        line = line.rstrip()
+        if "\r" in line:
+            line = line.split("\r")[-1]
+        m = PROG_RE.search(line)
+        if m and progress:
+            progress.emit("progress", stage="download",
+                          done=round(float(m.group(1)) * 10), total=1000,
+                          eta=m.group(2))
+        elif "[download]" not in line:
+            print(line, flush=True)
+    if p.wait() != 0:
         print("✗ 下载失败。若因会员画质受限，可加 --cookies-from-browser safari 重试")
+        if progress:
+            progress.emit_error("download-fail", "下载失败（yt-dlp 退出码非 0）")
         sys.exit(1)
     print("✅ 下载完成")
 

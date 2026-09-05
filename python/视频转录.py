@@ -171,19 +171,36 @@ def transcribe(video, lang="zh", prompt=None, model=MODEL_DEFAULT):
         print("✗ 音频提取失败（视频可能没有音轨）")
         sys.exit(1)
 
-    # 转写
+    # 转写（--print-progress 流式解析进度 → 进度事件，供插件任务面板显示进度条/ETA）
     prefix = video.with_suffix("")
     cmd = [WHISPER_BIN, "-m", str(model), "-l", lang, "-f", str(tmp_wav),
-           "-otxt", "-osrt", "-oj", "-of", str(prefix)]
+           "-otxt", "-osrt", "-oj", "-of", str(prefix), "--print-progress"]
     if prompt:
         cmd += ["--prompt", prompt]
     print("  转写中（whisper large-v3-turbo）…")
     t0 = time.time()
-    r = subprocess.run(cmd)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                         text=True, bufsize=1)
+    try:
+        import progress as progress_mod
+    except ImportError:
+        progress_mod = None
+    WPROG_RE = re.compile(r"progress\s*=\s*(\d+)%")
+    for line in p.stdout:
+        line = line.rstrip()
+        if "\r" in line:
+            line = line.split("\r")[-1]
+        m = WPROG_RE.search(line)
+        if m and progress_mod:
+            progress_mod.emit("progress", stage="transcribe",
+                              done=int(m.group(1)), total=100)
+        elif "progress" not in line:
+            print(line, flush=True)
+    r = p.wait()
     cost = time.time() - t0
 
     tmp_wav.unlink(missing_ok=True)
-    if r.returncode != 0:
+    if r != 0:
         print("✗ 转写失败（whisper-cli 退出码非 0）")
         try:
             import progress

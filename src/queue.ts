@@ -102,6 +102,11 @@ export class TaskQueue {
   private async start(t: TaskRuntime): Promise<void> {
     t.status = "running";
     t.stages = [];
+    t.progress = undefined;
+    t.etaPassthrough = undefined;
+    t.etaSec = undefined;
+    t.lastDone = undefined;
+    t.lastAt = undefined;
     this.running++;
     this.notify();
 
@@ -148,12 +153,31 @@ export class TaskQueue {
             label: e.label ?? e.stage ?? "",
             status: "active",
           });
+          // 新阶段：重置 ETA 估算基线
+          t.lastDone = undefined;
+          t.lastAt = undefined;
+          t.etaSec = undefined;
+          t.etaPassthrough = undefined;
         }
         break;
       }
       case "progress":
         if (typeof e.done === "number" && typeof e.total === "number") {
           t.progress = { done: e.done, total: e.total };
+          // ETA：脚本透传优先（yt-dlp 原生），否则按最近两次进度的速率滑动估算
+          const now = Date.now();
+          if (e.eta) {
+            t.etaPassthrough = e.eta;
+            t.etaSec = undefined;
+          } else if (
+            t.lastDone !== undefined && t.lastAt !== undefined &&
+            e.done > t.lastDone && now > t.lastAt
+          ) {
+            const rateSec = (e.done - t.lastDone) / ((now - t.lastAt) / 1000);
+            if (rateSec > 0) t.etaSec = (e.total - e.done) / rateSec;
+          }
+          t.lastDone = e.done;
+          t.lastAt = now;
         }
         break;
       case "result":
